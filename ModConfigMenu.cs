@@ -763,6 +763,7 @@ namespace ModConfigMenu
                 var mod = mods[selectedModIndex];
                 foreach (var e in mod.Entries)
                     e.Entry.BoxedValue = e.Entry.DefaultValue;
+                DetectKeybindConflicts();
                 NavigateToConfigEditor(selectedModIndex, false);
             });
 
