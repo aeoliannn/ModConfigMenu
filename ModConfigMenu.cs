@@ -312,7 +312,7 @@ namespace ModConfigMenu
             DetectKeybindConflicts();
         }
 
-        private static void DetectKeybindConflicts()
+        internal static void DetectKeybindConflicts()
         {
             foreach (var m in mods) { m.HasKeybindConflicts = false; foreach (var e in m.Entries) e.ConflictWarning = null; }
             if (!showKeybindWarnings.Value) return;
@@ -1803,7 +1803,7 @@ namespace ModConfigMenu
                         buttonsField.SetValue(connectionMenu, next);
                     }
                 }
-
+                ModConfigMenuPlugin.DetectKeybindConflicts();
                 done = true;
             }
             catch (Exception ex)
