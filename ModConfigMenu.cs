@@ -94,6 +94,9 @@ namespace ModConfigMenu
             pollerObj.hideFlags = HideFlags.HideAndDontSave;
             pollerObj.AddComponent<TitleScreenPoller>();
 
+            try { Harmony.CreateAndPatchAll(typeof(QuitToTitlePatch)); }
+            catch (Exception ex) { Logger.LogInfo("MCM: QuitToTitle patch failed - " + ex.Message); }
+
             try { Harmony.CreateAndPatchAll(typeof(UIConfigButtonPatch)); }
             catch (Exception ex) { Logger.LogInfo("MCM: Harmony patch failed - " + ex.Message); }
 
@@ -1699,9 +1702,14 @@ namespace ModConfigMenu
 
     internal class TitleScreenPoller : MonoBehaviour
     {
+        internal static TitleScreenPoller Instance;
         private bool done;
         private FieldInfo contentParentField;
         private FieldInfo buttonsField;
+
+        private void Awake() { Instance = this; }
+
+        internal void Reset() { done = false; }
 
         private void Update()
         {
@@ -1806,12 +1814,29 @@ namespace ModConfigMenu
         }
     }
 
+    //  Quit-to-title reset
+
+    [HarmonyPatch]
+    internal static class QuitToTitlePatch
+    {
+        [HarmonyPatch(typeof(PauseMenuUI), "GoToTitleScreen")]
+        [HarmonyPrefix]
+        private static void ResetFlags()
+        {
+            if (TitleScreenPoller.Instance != null)
+                TitleScreenPoller.Instance.Reset();
+            UIConfigButtonPatch.ResetDone();
+        }
+    }
+
     //  Pause menu button injection
 
     [HarmonyPatch]
     internal static class UIConfigButtonPatch
     {
         private static bool done;
+
+        internal static void ResetDone() { done = false; }
 
         [HarmonyPatch(typeof(PauseMenuUI), "OnContentActivated")]
         [HarmonyPostfix]
